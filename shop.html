@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa Hàng - Thương Hiệu Chăm Sóc Da</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #FBF9F6;
+            --card-bg: #F4F1EA;
+            --box-bg: #EFECE6;
+            --text-main: #2C221E;
+            --text-muted: #6B5E55;
+            --accent-gold: #C49A6C;
+            --border-color: #EBE5DC;
+            --dark-footer: #1C1816;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .serif-font {
+            font-family: Arial, sans-serif;
+        }
+
+        /* Navigation Header */
+        .nav { background: #090909; color: #FFFFFF; }
+        .nav .nav-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 96px;
+            padding: 28px 120px 0;
+        }
+        .nav-logo { width: 180px; height: auto; display: block; }
+        .nav-links {
+            display: flex;
+            gap: 27px;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            letter-spacing: 1.17px;
+        }
+        .nav-links a { color: inherit; text-decoration: none; padding: 8px 12px; border: 1px solid transparent; }
+        .nav-links a.active { font-weight: 700; border-color: rgba(255,255,255,0.85); }
+        .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .nav-actions a { display: flex; align-items: center; justify-content: center; padding: 6px; }
+        .nav-actions svg { width: 22px; height: 22px; }
+        @media (max-width: 900px) {
+            .nav .nav-wrap { padding-left: 32px; padding-right: 32px; }
+            .nav-links { gap: 14px; font-size: 11px; }
+        }
+        @media (max-width: 760px) { .nav-links { display: none; } }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .banner {
+            background-color: var(--box-bg);
+            border-radius: 12px;
+            padding: 40px 50px;
+            margin-bottom: 40px;
+        }
+
+        .banner h1 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        .banner p {
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        /* Product Grid Layout */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 220px;
+            background: #E3DDD3;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A3998F;
+            font-size: 13px;
+            overflow: hidden;
+        }
+
+        .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .product-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-add {
+            width: 100%;
+            background: var(--text-main);
+            color: #FFF;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background: var(--accent-gold);
+        }
+
+        /* Footer */
+        footer { background: #090909; color: rgba(255,255,255,0.7); padding: 60px 120px 40px; }
+        footer > .footer-wrap { max-width: none; margin: 0; padding: 0; }
+        .foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 60px; margin-bottom: 60px; }
+        .foot-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+        .foot-col { display: flex; flex-direction: column; gap: 17px; }
+        .foot-col h5 { font-family: Arial, sans-serif; font-size: 18px; color: #fff; line-height: 21px; margin: 0; font-weight: 400; }
+        .foot-col p, .foot-col a { font-family: Arial, sans-serif; font-size: 12px; color: #fff; opacity: 0.7; line-height: 23px; margin: 0; }
+        .foot-col a { display: block; text-decoration: none; }
+        .foot-signup { display: flex; flex-direction: column; gap: 9px; }
+        .foot-signup h5 { margin: 0; }
+        .foot-signup > p { margin: 0; }
+        .signup-form { margin-top: 20px; display: flex; flex-direction: column; gap: 9px; }
+        .signup-input { border: 1px solid #fff; height: 48px; width: 100%; padding: 0 16px; font-family: Arial, sans-serif; font-size: 14px; color: #fff; background: transparent; outline: none; }
+        .signup-button { background: #fff; border: none; height: 48px; cursor: pointer; font-family: Arial, sans-serif; font-weight: 700; font-size: 14px; color: #ae7c7c; }
+        .foot-bottom { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .foot-bottom img:first-child { width: 180px; height: auto; }
+        .foot-copy { font-family: Arial, sans-serif; font-size: 12px; color: #fff; opacity: 0.7; line-height: 13px; margin-top: 16px; }
+        .toast { position: fixed; top: 24px; left: 50%; z-index: 1000; padding: 14px 20px; border-radius: 8px; background: #1f5136; color: #fff; font-family: Arial, sans-serif; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transform: translate(-50%, -12px); pointer-events: none; transition: opacity .2s, transform .2s; }
+        .toast.show { opacity: 1; transform: translate(-50%, 0); }
+        @media (max-width: 900px) {
+            footer { padding-left: 32px; padding-right: 32px; }
+            .foot-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 760px) { .foot-links { grid-template-columns: 1fr 1fr; } }
+
+        /* Responsive cho màn hình nhỏ hơn */
+        @media (max-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .product-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header điều hướng -->
+    <div style="background:#f3f1eb;height:34px;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:11px;color:#000;letter-spacing:.88px;text-transform:uppercase;text-align:center">Miễn phí vận chuyển cho đơn từ 1.750.000₫ &nbsp;|&nbsp; Ưu đãi mở màn: Giảm 10% cho lần mua đầu tiên</div>
+    <nav class="nav">
+        <div class="nav-wrap">
+            <img class="nav-logo" src="/logo 3.svg" alt="Logo Sugar Rush">
+            <div class="nav-links">
+                <a href="/">Trang chủ</a>
+                <a href="/shop.html" class="active">Cửa hàng</a>
+                <a href="/about-us.html">Về chúng tôi</a>
+                <a href="/contact.html">Liên hệ</a>
+            </div>
+            <div class="nav-actions" aria-label="Tài khoản và giỏ hàng">
+                <a href="#" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="white" stroke-width="1.8"/><path d="M16 16L21 21" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></a>
+                    <a href="/cart.html" aria-label="Giỏ hàng"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4H5L6.4 14.2C6.5 15 7.2 15.6 8 15.6H17.2C17.9 15.6 18.6 15.1 18.8 14.4L20.4 8H6.1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.3" cy="18.5" r="1.5" fill="white"/><circle cx="17" cy="18.5" r="1.5" fill="white"/></svg></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Trang Cửa hàng (Shop All) -->
+    <div class="container">
+        <div class="banner">
+            <h1>Khám Phá Bộ Sưu Tập</h1>
+            <p>Các sản phẩm chăm sóc da thuần tự nhiên, được tinh chế để nuôi dưỡng làn da và nâng niu chu trình dưỡng hằng ngày của bạn.</p>
+        </div>
+
+        <!-- Danh sách sản phẩm dạng lưới (Product List) -->
+        <div class="product-grid">
+            <!-- Sản phẩm 1 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/1789878789720_7822267878735642140_7822267878735642140_2b8ba36d1edddcfc1c1c86357f014f1c.jpg" alt="Nước cân bằng Sugar Rush" />
+                    </div>
+                    <div class="product-title">Nước cân bằng Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>790.000₫</span>
+                      <span>⭐ 4.9</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 2 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/1789878789707_7822267878735642140_7822267878735642140_26a47450bb6e5961cf0dcc28b177ddc8.jpg" alt="Serum phục hồi Sugar Rush" />
+                    </div>
+                    <div class="product-title">Serum phục hồi Sugar Rushc</div>
+                    <div class="product-meta">
+                      <span>890.000₫</span>
+                      <span>⭐ 4.8</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 3 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/1789878789699_7822267878735642140_7822267878735642140_294ecdc0c525dd674b514b4402bcd34d.jpg" alt="Kem dưỡng đậm đặc Sugar Rush" />
+                    </div>
+                    <div class="product-title">Kem dưỡng đậm đặc Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>990.000₫</span>
+                      <span>⭐ 5.0</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 4 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/1789878789714_7822267878735642140_7822267878735642140_7f662cb53b21442292cb4252d1ca924e.jpg" alt="Sữa rửa mặt dịu nhẹ Sugar Rush" />
+                    </div>
+                    <div class="product-title">Sữa rửa mặt dịu nhẹ Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>640.000₫</span>
+                      <span>⭐ 4.7</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 5 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/bha.png" alt="Tẩy tế bào chết BHA Sugar Rush" />
+                    </div>
+                    <div class="product-title">Tẩy tế bào chết BHA Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>750.000đ</span>
+                      <span>⭐ 4.9</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 6 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/eye_cream.png" alt="Kem dưỡng vùng mắt thư giãn Sugar Rush" />
+                    </div>
+                    <div class="product-title">Kem dưỡng vùng mắt thư giãn Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>980.000đ</span>
+                      <span>⭐ 4.6</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 7 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/vitamin_c.png" alt="Tinh chất Vitamin C sáng da Sugar Rush" />
+                    </div>
+                    <div class="product-title">Tinh chất Vitamin C sáng da Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>900.000đ</span>
+                      <span>⭐ 4.9</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+
+            <!-- Sản phẩm 8 -->
+            <div class="product-card">
+                <div>
+                    <div class="product-img">
+                        <img src="/night_mask.png" alt="Sáp dưỡng đêm làm dịu da Sugar Rush" />
+                    </div>
+                    <div class="product-title">Sáp dưỡng đêm làm dịu da Sugar Rush</div>
+                    <div class="product-meta">
+                      <span>700.000đ</span>
+                      <span>⭐ 4.8</span>
+                    </div>
+                </div>
+                <button class="btn-add">Thêm Vào Giỏ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-wrap">
+            <div class="foot-grid">
+                <div class="foot-links">
+                    <div class="foot-col">
+                        <h5>Liên kết nhanh</h5>
+                        <a href="/shop.html">Cửa hàng</a>
+                        <a href="/about-us.html">Về chúng tôi</a>
+                        <a href="#">Blog</a>
+                        <a href="/contact.html">Liên hệ</a>
+                    </div>
+                    <div class="foot-col">
+                        <h5>Mạng xã hội</h5>
+                        <a href="https://www.facebook.com/bangtan.official" target="_blank" rel="noreferrer">Facebook</a>
+                        <a href="https://www.instagram.com/bts.bighitofficial/" target="_blank" rel="noreferrer">Instagram</a>
+                        <a href="https://www.youtube.com/results?search_query=bts" target="_blank" rel="noreferrer">YouTube</a>
+                    </div>
+                    <div class="foot-col">
+                        <h5>Chính sách</h5>
+                        <a href="#">Chính sách bảo mật</a>
+                        <a href="#">Chính sách hoàn trả</a>
+                        <a href="#">Điều khoản dịch vụ</a>
+                        <a href="#">Chính sách vận chuyển</a>
+                    </div>
+                </div>
+                <div class="foot-signup">
+                    <h5>Nhận 10% cho đơn hàng đầu tiên</h5>
+                    <p>Nhận lời khuyên chăm sóc da, quyền truy cập sớm vào sản phẩm mới và ưu đãi độc quyền ngay trong hộp thư của bạn.</p>
+                    <div class="signup-form">
+                        <input type="email" class="signup-input" placeholder="Địa chỉ email" aria-label="Địa chỉ email" required>
+                        <button class="signup-button" type="button">Đăng ký</button>
+                    </div>
+                </div>
+            </div>
+            <div class="foot-bottom">
+                <img src="/logo 3.svg" alt="Logo Sugar Rush">
+                <img src="/card.svg" alt="Các phương thức thanh toán được chấp nhận" style="width:226px;height:22px;object-fit:contain">
+            </div>
+            <p class="foot-copy">© 2025 Sugar Rush. Mọi quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <div class="toast" role="status" aria-live="polite">Gửi thành công</div>
+    <script>
+        const toast = document.querySelector('.toast');
+        let toastTimer;
+        function showSuccessToast() {
+            toast.classList.add('show');
+            window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        document.querySelectorAll('.signup-form').forEach((form) => {
+            const email = form.querySelector('.signup-input');
+            form.querySelector('.signup-button').addEventListener('click', () => {
+                if (!email.checkValidity()) { email.reportValidity(); return; }
+                email.value = '';
+                showSuccessToast();
+            });
+        });
+    </script>
+
+    <script>
+        const cartStorageKey = 'sugar-rush-cart';
+        let cartToastTimer;
+
+        function showCartToast() {
+            let toast = document.querySelector('.cart-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.className = 'cart-toast';
+                toast.setAttribute('role', 'status');
+                toast.textContent = 'Đã thêm vào giỏ thành công';
+                Object.assign(toast.style, {
+                    position: 'fixed', top: '72px', left: '50%', zIndex: '1000',
+                    transform: 'translateX(-50%)', background: '#1f5136', color: '#fff',
+                    padding: '12px 20px', fontSize: '14px', boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+                });
+                document.body.appendChild(toast);
+            }
+            toast.style.display = 'block';
+            window.clearTimeout(cartToastTimer);
+            cartToastTimer = window.setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        }
+
+        document.querySelectorAll('.product-card').forEach((card) => {
+            const button = card.querySelector('.btn-add');
+            const title = card.querySelector('.product-title')?.textContent?.trim();
+            const priceText = card.querySelector('.product-meta span')?.textContent?.trim() || '';
+            const image = card.querySelector('.product-img img')?.getAttribute('src') || '';
+            if (!button || !title) return;
+
+            button.addEventListener('click', () => {
+                const savedCart = window.localStorage.getItem(cartStorageKey);
+                const cart = savedCart ? JSON.parse(savedCart) : [];
+                const product = cart.find((item) => item.id === title);
+                if (product) product.quantity += 1;
+                else cart.push({ id: title, name: title, price: Number(priceText.replace(/[^0-9]/g, '')), image, variant: 'Dung tích tiêu chuẩn', quantity: 1 });
+                window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
+                window.dispatchEvent(new CustomEvent('sugar-rush-cart-updated'));
+                showCartToast();
+            });
+        });
+    </script>
+    <script src="/chatbot.js" defer></script>
+</body>
+</html>

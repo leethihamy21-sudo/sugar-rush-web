@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Domine:wght@400;700&family=Jost:wght@500&family=Syne:wght@600&display=swap');
+@import 'tailwindcss';
+
+@font-face {
+  font-family: "Domine:Bold";
+  src: url("https://static.figma.com/font/Domine_wght__1") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Domine:Regular";
+  src: url("https://static.figma.com/font/Domine_wght__1") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Jost:Medium";
+  src: url("https://static.figma.com/font/Jost_wght__1") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: "Syne:SemiBold";
+  src: url("https://static.figma.com/font/Syne_wght__2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }

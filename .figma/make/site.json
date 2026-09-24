@@ -1,0 +1,10 @@
+{
+  "description": "Easily transform Figma designs into fully functional websites, streamlining the design-to-development process for designers and developers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

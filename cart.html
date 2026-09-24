@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng - Thương Hiệu Chăm Sóc Da</title>
+    <style>
+        :root {
+            --bg-color: #FBF9F6;
+            --card-bg: #F4F1EA;
+            --box-bg: #EFECE6;
+            --text-main: #2C221E;
+            --text-muted: #6B5E55;
+            --accent-gold: #C49A6C;
+            --border-color: #EBE5DC;
+            --dark-footer: #1C1816;
+            --danger-color: #D9534F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif; /* Sử dụng font Arial theo yêu cầu */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Shared navigation */
+        .nav { background: #090909; color: #FFFFFF; }
+        .nav-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 96px;
+            padding: 28px 120px 0;
+        }
+        .nav-logo { width: 180px; height: auto; display: block; }
+        .nav-links {
+            display: flex;
+            gap: 27px;
+            align-items: center;
+            font-size: 13px;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            letter-spacing: 1.17px;
+        }
+        .nav-links a { color: inherit; text-decoration: none; padding: 8px 12px; border: 1px solid transparent; }
+        .nav-links a.active { font-weight: 700; border-color: rgba(255,255,255,0.85); }
+        .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .nav-actions a { display: flex; align-items: center; justify-content: center; padding: 6px; }
+        .nav-actions svg { width: 22px; height: 22px; }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+
+        /* Cart Layout: 2 Columns (Table items + Summary) */
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Cart Items Section */
+        .cart-items-container {
+            background: #FFFFFF;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+        }
+
+        .cart-header-row {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 40px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr 40px;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .product-img-placeholder {
+            width: 70px;
+            height: 70px;
+            background: #E3DDD3;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .product-img-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .product-variant {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .item-price {
+            font-size: 14px;
+        }
+
+        /* Quantity Controller */
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: max-content;
+            background: var(--bg-color);
+        }
+
+        .quantity-btn {
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .quantity-input {
+            width: 30px;
+            text-align: center;
+            border: none;
+            background: none;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .item-total {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: var(--danger-color);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Cart Summary Box */
+        .cart-summary {
+            background: var(--box-bg);
+            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #DCD5C9;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .summary-row.total {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-main);
+            border-top: 1px solid #DCD5C9;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        /* Promo code input */
+        .promo-box {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .promo-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            background: #FFFFFF;
+        }
+
+        .btn-apply {
+            background: var(--text-muted);
+            color: #FFF;
+            border: none;
+            padding: 0 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-checkout {
+            width: 100%;
+            background: var(--text-main);
+            color: #FFF;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-checkout:hover {
+            background: var(--accent-gold);
+        }
+
+        /* Shared footer */
+        footer { background: #090909; color: rgba(255,255,255,0.7); padding: 60px 120px 40px; margin-top: 80px; }
+        footer > .footer-wrap { max-width: none; margin: 0; padding: 0; }
+        .foot-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 60px; margin-bottom: 60px; }
+        .foot-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+        .foot-col { display: flex; flex-direction: column; gap: 17px; }
+        .foot-col h5 { font-size: 18px; color: #fff; line-height: 21px; font-weight: 400; }
+        .foot-col p, .foot-col a, .foot-signup p { font-size: 12px; color: #fff; opacity: 0.7; line-height: 23px; }
+        .foot-col a { display: block; text-decoration: none; }
+        .foot-signup { display: flex; flex-direction: column; gap: 9px; }
+        .foot-signup h5 { color: #fff; font-size: 18px; font-weight: 400; }
+        .signup-form { margin-top: 20px; display: flex; flex-direction: column; gap: 9px; }
+        .signup-input { border: 1px solid #fff; height: 48px; width: 100%; padding: 0 16px; font-size: 14px; color: #fff; background: transparent; outline: none; }
+        .signup-button { background: #fff; border: none; height: 48px; cursor: pointer; font-weight: 700; font-size: 14px; color: #ae7c7c; }
+        .foot-bottom { border-top: 1px solid rgba(255,255,255,0.15); padding-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .foot-bottom img:first-child { width: 180px; height: auto; }
+        .foot-copy { font-size: 12px; color: #fff; opacity: 0.7; line-height: 13px; margin-top: 16px; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+            .cart-header-row {
+                display: none;
+            }
+            .cart-item {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                background: var(--bg-color);
+                padding: 15px;
+                border-radius: 6px;
+                margin-bottom: 10px;
+            }
+            .nav-wrap { padding-left: 32px; padding-right: 32px; }
+            .nav-links { gap: 14px; font-size: 11px; }
+        }
+        @media (max-width: 760px) { .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div style="background:#f3f1eb;height:34px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;letter-spacing:.88px;text-transform:uppercase;text-align:center">Miễn phí vận chuyển cho đơn từ 1.750.000₫ &nbsp;|&nbsp; Ưu đãi mở màn: Giảm 10% cho lần mua đầu tiên</div>
+    <nav class="nav">
+        <div class="nav-wrap">
+            <img class="nav-logo" src="/logo 3.svg" alt="Logo Sugar Rush">
+            <div class="nav-links">
+                <a href="/">Trang chủ</a>
+                <a href="/shop.html">Cửa hàng</a>
+                <a href="/about-us.html">Về chúng tôi</a>
+                <a href="/contact.html">Liên hệ</a>
+            </div>
+            <div class="nav-actions" aria-label="Tài khoản và giỏ hàng">
+                <a href="#" aria-label="Tìm kiếm"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6" stroke="white" stroke-width="1.8"/><path d="M16 16L21 21" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg></a>
+                <a href="/cart.html" aria-label="Giỏ hàng" class="active"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4H5L6.4 14.2C6.5 15 7.2 15.6 8 15.6H17.2C17.9 15.6 18.6 15.1 18.8 14.4L20.4 8H6.1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.3" cy="18.5" r="1.5" fill="white"/><circle cx="17" cy="18.5" r="1.5" fill="white"/></svg></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" id="cart-root"></div>
+
+    <footer>
+        <div class="footer-wrap">
+            <div class="foot-grid">
+                <div class="foot-links">
+                    <div class="foot-col">
+                        <h5>Liên kết nhanh</h5>
+                        <a href="/shop.html">Cửa hàng</a>
+                        <a href="/about-us.html">Về chúng tôi</a>
+                        <a href="#">Blog</a>
+                        <a href="/contact.html">Liên hệ</a>
+                    </div>
+                    <div class="foot-col">
+                        <h5>Mạng xã hội</h5>
+                        <a href="https://www.facebook.com/bangtan.official" target="_blank" rel="noreferrer">Facebook</a>
+                        <a href="https://www.instagram.com/bts.bighitofficial/" target="_blank" rel="noreferrer">Instagram</a>
+                        <a href="https://www.youtube.com/results?search_query=bts" target="_blank" rel="noreferrer">YouTube</a>
+                    </div>
+                    <div class="foot-col">
+                        <h5>Chính sách</h5>
+                        <a href="#">Chính sách bảo mật</a>
+                        <a href="#">Chính sách hoàn trả</a>
+                        <a href="#">Điều khoản dịch vụ</a>
+                        <a href="#">Chính sách vận chuyển</a>
+                    </div>
+                </div>
+                <div class="foot-signup">
+                    <h5>Nhận 10% cho đơn hàng đầu tiên</h5>
+                    <p>Nhận lời khuyên chăm sóc da, quyền truy cập sớm vào sản phẩm mới và ưu đãi độc quyền ngay trong hộp thư của bạn.</p>
+                    <div class="signup-form">
+                        <input type="email" class="signup-input" placeholder="Địa chỉ email" aria-label="Địa chỉ email">
+                        <button class="signup-button" type="button">Đăng ký</button>
+                    </div>
+                </div>
+            </div>
+            <div class="foot-bottom">
+                <img src="/logo 3.svg" alt="Logo Sugar Rush">
+                <img src="/card.svg" alt="Các phương thức thanh toán được chấp nhận" style="width:226px;height:22px;object-fit:contain">
+            </div>
+            <p class="foot-copy">© 2025 Sugar Rush. Mọi quyền được bảo lưu.</p>
+        </div>
+    </footer>
+    <script>
+        const cartStorageKey = 'sugar-rush-cart';
+        const cartRoot = document.querySelector('#cart-root');
+
+        function readCart() {
+            try {
+                return JSON.parse(window.localStorage.getItem(cartStorageKey) || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function formatPrice(value) {
+            return `${new Intl.NumberFormat('vi-VN').format(value)}đ`;
+        }
+
+        function saveCart(cart) {
+            window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
+            renderCart();
+        }
+
+        function renderCart() {
+            const cart = readCart();
+            const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+            const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+            const shipping = subtotal >= 500000 || subtotal === 0 ? 0 : 50000;
+
+            if (!cart.length) {
+                cartRoot.innerHTML = '<h1>Giỏ Hàng Của Bạn (0 sản phẩm)</h1><div class="cart-items-container" style="text-align:center;padding:48px 20px"><p>Giỏ hàng của bạn đang trống.</p><a href="/shop.html" class="btn-checkout" style="display:inline-block;width:auto;text-decoration:none;margin-top:24px">Khám phá sản phẩm</a></div>';
+                return;
+            }
+
+            cartRoot.innerHTML = `
+                <h1>Giỏ Hàng Của Bạn (${itemCount} sản phẩm)</h1>
+                <div class="cart-layout">
+                    <div class="cart-items-container">
+                        <div class="cart-header-row"><div>Sản phẩm</div><div>Đơn giá</div><div>Số lượng</div><div>Thành tiền</div><div></div></div>
+                        ${cart.map((item, index) => `
+                            <div class="cart-item" data-index="${index}">
+                                <div class="product-info">
+                                    <div class="product-img-placeholder">${item.image ? `<img src="${item.image}" alt="${item.name}">` : 'Ảnh SP'}</div>
+                                    <div><div class="product-name">${item.name}</div><div class="product-variant">${item.variant || 'Dung tích tiêu chuẩn'}</div></div>
+                                </div>
+                                <div class="item-price">${formatPrice(item.price)}</div>
+                                <div><div class="quantity-control"><button class="quantity-btn" data-action="decrease" aria-label="Giảm số lượng">-</button><input type="text" class="quantity-input" value="${item.quantity}" inputmode="numeric" aria-label="Số lượng"><button class="quantity-btn" data-action="increase" aria-label="Tăng số lượng">+</button></div></div>
+                                <div class="item-total">${formatPrice(item.price * item.quantity)}</div>
+                                <div><button class="remove-btn" title="Xóa sản phẩm" aria-label="Xóa ${item.name}">×</button></div>
+                            </div>`).join('')}
+                    </div>
+                    <div class="cart-summary">
+                        <div class="summary-title">Cộng Giỏ Hàng</div>
+                        <div class="summary-row"><span>Tạm tính</span><span>${formatPrice(subtotal)}</span></div>
+                        <div class="summary-row"><span>Phí vận chuyển</span><span>${shipping ? formatPrice(shipping) : 'Miễn phí'}</span></div>
+                        <div class="promo-box"><input type="text" class="promo-input" placeholder="Nhập mã ưu đãi"><button class="btn-apply">Áp dụng</button></div>
+                        <div class="summary-row total"><span>Tổng cộng</span><span style="color: var(--accent-gold); font-size: 18px;">${formatPrice(subtotal + shipping)}</span></div>
+                        <button class="btn-checkout">Tiến Hành Thanh Toán</button>
+                    </div>
+                </div>`;
+
+            cartRoot.querySelectorAll('.cart-item').forEach((row) => {
+                const index = Number(row.dataset.index);
+                row.querySelector('[data-action="decrease"]').addEventListener('click', () => {
+                    cart[index].quantity -= 1;
+                    if (cart[index].quantity <= 0) cart.splice(index, 1);
+                    saveCart(cart);
+                });
+                row.querySelector('[data-action="increase"]').addEventListener('click', () => {
+                    cart[index].quantity += 1;
+                    saveCart(cart);
+                });
+                row.querySelector('.quantity-input').addEventListener('change', (event) => {
+                    const quantity = Math.max(1, Number(event.target.value) || 1);
+                    cart[index].quantity = quantity;
+                    saveCart(cart);
+                });
+                row.querySelector('.remove-btn').addEventListener('click', () => {
+                    cart.splice(index, 1);
+                    saveCart(cart);
+                });
+            });
+        }
+
+        renderCart();
+        window.addEventListener('storage', renderCart);
+        window.addEventListener('sugar-rush-cart-updated', renderCart);
+    </script>
+    <script src="/chatbot.js" defer></script>
+
+</body>
+</html>
