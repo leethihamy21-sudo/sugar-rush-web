@@ -180,8 +180,8 @@ export default function App() {
     messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
   }, [chatMessages]);
 
-  async function sendChatMessage() {
-    const message = chatInput.trim();
+  async function sendChatMessage(suggestedMessage?: string) {
+    const message = (suggestedMessage ?? chatInput).trim();
     if (!message) return;
 
     setChatInput('');
@@ -246,8 +246,8 @@ export default function App() {
         <div style={{ padding: '80px 0 80px 60px' }}>
           <h2 style={{ fontFamily: '"Domine:Regular", Domine, serif', fontWeight: 400, fontSize: 36, color: '#333', letterSpacing: '-0.72px', lineHeight: '45px', marginBottom: 35 }}>Chăm sóc da</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
-            <ProductCard img={imgRectangle2232} name="Nước cân bằng Sugar Rush" price="790.000₫" />
-            <ProductCard img={imgRectangle2230} name="Serum phục hồi nâng cấp Sugar Rush" price="490.000₫" />
+            <ProductCard img={imgRectangle2232} name="Nước cân bằng Sugar Rush" price="180.000₫" />
+            <ProductCard img={imgRectangle2230} name="Serum phục hồi nâng cấp Sugar Rush" price="220.000₫" />
           </div>
         </div>
         <div style={{ minHeight: 480, overflow: 'hidden' }}>
@@ -265,10 +265,10 @@ export default function App() {
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
-          <ProductCard img={imgFrame1000004406} name="Nước cân bằng Sugar Rush" price="790.000₫" />
-          <ProductCard img={imgRectangle2231} name="Serum phục hồi Sugar Rush" price="890.000₫" oldPrice="1.050.000₫" badge="Hết hàng" />
-          <ProductCard img={imgFrame1000004408} name="Kem dưỡng đậm đặc Sugar Rush" price="990.000₫" />
-          <ProductCard img={imgRectangle2233} name="Sữa rửa mặt dịu nhẹ Sugar Rush" price="640.000₫" />
+          <ProductCard img={imgFrame1000004406} name="Nước cân bằng Sugar Rush" price="180.000₫" />
+          <ProductCard img={imgRectangle2231} name="Serum phục hồi Sugar Rush" price="220.000₫" oldPrice="260.000₫" badge="Hết hàng" />
+          <ProductCard img={imgFrame1000004408} name="Kem dưỡng đậm đặc Sugar Rush" price="200.000₫" />
+          <ProductCard img={imgRectangle2233} name="Sữa rửa mặt dịu nhẹ Sugar Rush" price="150.000₫" />
         </div>
       </div>
 
@@ -550,7 +550,7 @@ export default function App() {
           <div style={{ flexShrink: 0, background: '#f7f7f7', padding: '10px 12px 12px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
             <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {['WappGPT là gì?', 'Bảng giá', 'Câu hỏi thường gặp'].map((item) => (
-                <button key={item} type="button" style={{ border: '1px solid rgba(73, 78, 242, 0.2)', borderRadius: 999, background: '#fff', padding: '8px 10px', fontFamily: 'Arial, sans-serif', fontSize: 11, color: '#3a3a3a', cursor: 'pointer' }}>{item}</button>
+                <button key={item} type="button" onClick={() => void sendChatMessage(item)} style={{ border: '1px solid rgba(73, 78, 242, 0.2)', borderRadius: 999, background: '#fff', padding: '8px 10px', fontFamily: 'Arial, sans-serif', fontSize: 11, color: '#3a3a3a', cursor: 'pointer' }}>{item}</button>
               ))}
             </div>
             <form onSubmit={(event) => { event.preventDefault(); void sendChatMessage(); }} style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#ececef', borderRadius: 16, padding: '6px 8px 6px 12px' }}>

@@ -309,14 +309,18 @@
   /* ---------- Team ---------- */
   .team { padding: 100px 0; }
   .team-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 32px;
   }
+  .team-card { flex: 0 1 calc(25% - 24px); min-width: 0; }
   .team-card .photo {
     aspect-ratio: 1/1;
     border-radius: 4px;
     margin-bottom: 18px;
+    background-size: cover;
+    background-position: center;
   }
   .team-card h4 {
     font-family: 'Fraunces', serif;
@@ -328,12 +332,16 @@
     color: var(--ink-soft);
     margin-top: 4px;
   }
-  .t1 { background: linear-gradient(150deg,#E9D6C4,#C29472); }
-  .t2 { background: linear-gradient(150deg,#DCCFBE,#A9846C); }
-  .t3 { background: linear-gradient(150deg,#EADFCF,#BB9578); }
-  .t4 { background: linear-gradient(150deg,#DFD2C0,#9C7B65); }
+  .t1 { background-image: url('/Lê Thị Hà My.jpg'); }
+  .t2 { background-image: url('/Đoàn Thị Hải Hà.jpg'); }
+  .t3 { background-image: url('/Nguyễn Thị Thu Hiền.jpg'); }
+  .t4 { background-image: url('/Khuất Huyền Linh.jpg'); }
+  .t5 { background-image: url('/Phan Thùy Dinh.jpg'); }
+  .t6 { background-image: url('/Nguyễn Thị Hiền.jpg'); }
+  .t7 { background-image: url('/Doãn Tuyết Nhung.jpg'); }
   @media (max-width: 760px) {
-    .team-grid { grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+    .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 20px; }
+    .team-card { width: auto; }
   }
 
   /* ---------- CTA ---------- */
@@ -525,26 +533,13 @@
         <h2>Những con người đứng sau mỗi công thức</h2>
       </div>
       <div class="team-grid">
-        <div class="team-card">
-          <div class="photo t1"></div>
-          <h4>Amara Whitfield</h4>
-          <p>Nhà sáng lập & Chuyên gia xây dựng công thức</p>
-        </div>
-        <div class="team-card">
-          <div class="photo t2"></div>
-          <h4>Sofia Marchetti</h4>
-          <p>Trưởng bộ phận sản phẩm</p>
-        </div>
-        <div class="team-card">
-          <div class="photo t3"></div>
-          <h4>Noah Bennett</h4>
-          <p>Trưởng bộ phận phát triển bền vững</p>
-        </div>
-        <div class="team-card">
-          <div class="photo t4"></div>
-          <h4>Leah Okafor</h4>
-          <p>Chăm sóc khách hàng</p>
-        </div>
+        <div class="team-card"><div class="photo t1"></div><h4>Lê Thị Hà My</h4><p>Nhà sáng lập & Giám đốc thương hiệu</p></div>
+        <div class="team-card"><div class="photo t2"></div><h4>Đoàn Thị Hải Hà</h4><p>Trưởng bộ phận phát triển sản phẩm</p></div>
+        <div class="team-card"><div class="photo t3"></div><h4>Nguyễn Thị Thu Hiền</h4><p>Chuyên gia nghiên cứu công thức</p></div>
+        <div class="team-card"><div class="photo t4"></div><h4>Khuất Huyền Linh</h4><p>Giám đốc sáng tạo</p></div>
+        <div class="team-card"><div class="photo t5"></div><h4>Phan Thùy Dinh</h4><p>Trưởng bộ phận chăm sóc khách hàng</p></div>
+        <div class="team-card"><div class="photo t6"></div><h4>Nguyễn Thị Hiền</h4><p>Quản lý vận hành</p></div>
+        <div class="team-card"><div class="photo t7"></div><h4>Doãn Tuyết Nhung</h4><p>Chuyên gia truyền thông</p></div>
       </div>
     </div>
   </section>
