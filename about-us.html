@@ -78,7 +78,7 @@
     text-transform: uppercase;
     letter-spacing: 1.17px;
   }
-  .nav-links a.active { color: var(--white); font-weight: 700; }
+  .nav-links a.active { color: var(--white); font-weight: 700; border: 1px solid rgba(255,255,255,0.85); padding: 8px 12px; }
   .nav-actions { display: flex; gap: 12px; align-items: center; }
   .nav-actions a { display: flex; align-items: center; justify-content: center; padding: 6px; }
   .nav-actions svg { width: 22px; height: 22px; }
@@ -96,10 +96,11 @@
     min-height: 78vh;
     display: flex;
     align-items: flex-end;
-    background:
-      radial-gradient(120% 90% at 78% 15%, rgba(255,255,255,0.28), transparent 55%),
-      linear-gradient(180deg, rgba(22,18,14,0.05) 0%, rgba(22,18,14,0.55) 100%),
-      linear-gradient(135deg, #D9B79A 0%, #C99C82 32%, #A9765C 68%, #7C5340 100%);
+    background-image: url('/1789878789772_7822267878735642140_7822267878735642140_bb7a1f892f3f5417e192dc5e5581a9f6.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #c8b8aa;
     overflow: hidden;
     opacity: 0;
     animation: reveal 900ms ease-out 120ms forwards;
@@ -108,9 +109,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background:
-      radial-gradient(38% 55% at 74% 60%, rgba(255,255,255,0.35), transparent 70%),
-      radial-gradient(28% 40% at 85% 30%, rgba(255,255,255,0.2), transparent 70%);
+    background: linear-gradient(180deg, rgba(22,18,14,0.08) 0%, rgba(22,18,14,0.62) 100%);
   }
   .hero-content {
     position: relative;
@@ -193,8 +192,12 @@
   }
   .split-text p + p { margin-top: 16px; }
 
-  .photo-a { background: linear-gradient(155deg, #EAD9C8 0%, #D8B79C 45%, #B78164 100%); }
-  .photo-b { background: linear-gradient(200deg, #E7E1D2 0%, #CBB79B 55%, #96725A 100%); }
+  .photo-a {
+    background: url('/1789878789753_7822267878735642140_7822267878735642140_dc1ebd6f8c87281ae8071d3c529aab3a.jpg') center center / cover no-repeat;
+  }
+  .photo-b {
+    background: url('/1789878789750_7822267878735642140_7822267878735642140_3094f71f6bdcce0d2d8289b9653abbba.jpg') center center / cover no-repeat;
+  }
   .photo-c { background: linear-gradient(160deg, #DCC6B8 0%, #B98F76 60%, #7C5847 100%); }
 
   @media (max-width: 860px) {
@@ -280,7 +283,7 @@
   }
   .founder-media {
     aspect-ratio: 4/5;
-    background: linear-gradient(165deg, #E4CBB6 0%, #C79A79 50%, #8E6249 100%);
+    background: url('/4c6b2.png') center 22% / cover no-repeat;
   }
   .founder-text {
     display: flex;

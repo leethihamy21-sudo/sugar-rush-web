@@ -220,7 +220,7 @@ export default function App() {
           <img src={imgLogo} alt="Brand logo" style={{ width: 180, height: 'auto', display: 'block' }} />
           <nav style={{ display: 'flex', gap: 27, alignItems: 'center' }}>
             {['Trang chủ', 'Cửa hàng', 'Về chúng tôi', 'Liên hệ'].map((item, i) => (
-              <a key={item} href={item === 'Về chúng tôi' ? '/about-us.html' : item === 'Liên hệ' ? '/contact.html' : '#'} style={{ fontFamily: 'Arial, sans-serif', fontWeight: i === 0 ? 700 : 400, fontSize: 13, color: '#fff', textTransform: 'uppercase', letterSpacing: '1.17px', textDecoration: 'none', lineHeight: '1.361' }}>{item}</a>
+              <a key={item} href={item === 'Cửa hàng' ? '/shop.html' : item === 'Về chúng tôi' ? '/about-us.html' : item === 'Liên hệ' ? '/contact.html' : '/'} style={{ fontFamily: 'Arial, sans-serif', fontWeight: i === 0 ? 700 : 400, fontSize: 13, color: '#fff', textTransform: 'uppercase', letterSpacing: '1.17px', textDecoration: 'none', lineHeight: '1.361', padding: '8px 12px', border: i === 0 ? '1px solid rgba(255,255,255,0.85)' : '1px solid transparent' }}>{item}</a>
             ))}
           </nav>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
