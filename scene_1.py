@@ -30,6 +30,11 @@ def _training_phrases(value):
     return [remove_accents(phrase) for phrase in str(value).split(',') if phrase.strip()]
 
 
+def _response_text(value):
+    """Keep line breaks from Excel consistent in the API response."""
+    return str(value).replace('\r\n', '\n').replace('\r', '\n')
+
+
 # ==========================================
 # HÀM TÌM KIẾM: ƯU TIÊN CỤM TỪ KHỚP CỤ THỂ NHẤT
 # ==========================================
@@ -59,7 +64,7 @@ def find_response(user_text):
                 best_match_idx = idx
 
     if best_match_idx >= 0:
-        return str(data.iloc[best_match_idx]['Responses'])
+        return _response_text(data.iloc[best_match_idx]['Responses'])
     return "Dạ hiện tại em chưa hiểu rõ ý bạn lắm. Bạn có thể hỏi cụ thể hơn về giá, thành phần hoặc công dụng nhé ạ!"
 
 

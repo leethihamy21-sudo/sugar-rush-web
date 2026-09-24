@@ -21,7 +21,7 @@
     '.sr-chat-min{width:26px;height:26px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;}',
     '.sr-chat-body{flex:1 1 auto;min-height:0;background:#f8f8f8;padding:12px 12px 10px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}',
     '.sr-chat-time{align-self:flex-end;font-size:10px;color:#6a6a6a;}',
-    '.sr-chat-msg{max-width:84%;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5;color:#202124;background:#e8e8eb;}',
+    '.sr-chat-msg{max-width:84%;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5;color:#202124;background:#e8e8eb;white-space:pre-wrap;}',
     '.sr-chat-msg.user{align-self:flex-end;background:#FFB5C1;}',
     '.sr-chat-msg-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end;}',
     '.sr-chat-msg-wrap.bot{align-items:flex-start;}',

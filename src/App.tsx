@@ -539,7 +539,7 @@ export default function App() {
 
             {chatMessages.map((message, index) => (
               <div key={`${message.role}-${index}`} style={{ display: 'flex', flexDirection: 'column', alignItems: message.role === 'user' ? 'flex-end' : 'flex-start', gap: 3 }}>
-                <div style={{ maxWidth: '84%', background: message.role === 'user' ? '#FFB5C1' : '#e8e8eb', color: '#202124', borderRadius: 14, padding: '10px 12px', fontFamily: 'Arial, sans-serif', fontSize: 13, lineHeight: '1.5' }}>
+                <div style={{ maxWidth: '84%', background: message.role === 'user' ? '#FFB5C1' : '#e8e8eb', color: '#202124', borderRadius: 14, padding: '10px 12px', fontFamily: 'Arial, sans-serif', fontSize: 13, lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
                   {message.text}
                 </div>
                 <span style={{ fontSize: 10, color: '#6a6a6a', fontFamily: 'Arial, sans-serif' }}>{message.time}{message.role === 'user' ? ' ✓' : ''}</span>
