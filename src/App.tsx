@@ -202,7 +202,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', background: '#fff', width: '100%', minHeight: '100dvh', position: 'relative' }}>
+    <div className="home-page" style={{ fontFamily: 'Arial, sans-serif', background: '#fff', width: '100%', minHeight: '100dvh', position: 'relative' }}>
 
       {/* Promo Bar */}
       <div style={{ background: '#f3f1eb', height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -216,7 +216,7 @@ export default function App() {
         <img src={imgRectangle1} alt="hero" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)' }} />
         {/* Nav */}
-        <div style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 120px 0' }}>
+        <div className="home-nav" style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 120px 0' }}>
           <img src={imgLogo} alt="Brand logo" style={{ width: 180, height: 'auto', display: 'block' }} />
           <nav style={{ display: 'flex', gap: 27, alignItems: 'center' }}>
             {['Trang chủ', 'Cửa hàng', 'Về chúng tôi', 'Liên hệ'].map((item, i) => (
@@ -242,10 +242,10 @@ export default function App() {
       </div>
 
       {/* Skin Care */}
-      <div style={{ background: '#f0ede6', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', columnGap: 24, alignItems: 'stretch' }}>
+      <div className="skin-section" style={{ background: '#f0ede6', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', columnGap: 24, alignItems: 'stretch' }}>
         <div style={{ padding: '80px 0 80px 60px' }}>
           <h2 style={{ fontFamily: '"Domine:Regular", Domine, serif', fontWeight: 400, fontSize: 36, color: '#333', letterSpacing: '-0.72px', lineHeight: '45px', marginBottom: 35 }}>Chăm sóc da</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
+          <div className="skincare-products" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             <ProductCard img={imgRectangle2232} name="Nước cân bằng Sugar Rush" price="180.000₫" />
             <ProductCard img={imgRectangle2230} name="Serum phục hồi nâng cấp Sugar Rush" price="220.000₫" />
           </div>
@@ -256,7 +256,7 @@ export default function App() {
       </div>
 
       {/* Best Sellers */}
-      <div style={{ padding: '60px 120px', background: '#fff' }}>
+      <div className="best-sellers" style={{ padding: '60px 120px', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 35 }}>
           <h2 style={{ fontFamily: '"Domine:Regular", Domine, serif', fontWeight: 400, fontSize: 36, color: '#333', letterSpacing: '-0.72px', lineHeight: '45px', margin: 0 }}>Bán chạy nhất</h2>
           <button style={{ border: '1px solid #333', background: 'transparent', padding: '13px 37px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -264,7 +264,7 @@ export default function App() {
             <img src={imgVector} alt="" style={{ width: 11, height: 9 }} />
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+        <div className="best-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
           <ProductCard img={imgFrame1000004406} name="Nước cân bằng Sugar Rush" price="180.000₫" />
           <ProductCard img={imgRectangle2231} name="Serum phục hồi Sugar Rush" price="220.000₫" oldPrice="260.000₫" badge="Hết hàng" />
           <ProductCard img={imgFrame1000004408} name="Kem dưỡng đậm đặc Sugar Rush" price="200.000₫" />
@@ -273,7 +273,7 @@ export default function App() {
       </div>
 
       {/* Why Choose Us */}
-      <div style={{ background: '#f0ede6', padding: '80px 120px' }}>
+      <div className="why-section" style={{ background: '#f0ede6', padding: '80px 120px' }}>
         <div style={{ display: 'flex', gap: 60, flexWrap: 'wrap' }}>
           {/* Left text */}
           <div style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column', gap: 27 }}>
@@ -288,7 +288,7 @@ export default function App() {
           </div>
 
           {/* Comparison table */}
-          <div style={{ flex: '1 1 400px' }}>
+          <div className="comparison-wrap" style={{ flex: '1 1 400px' }}>
             {/* Header */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', background: 'transparent', borderRadius: '17px 17px 0 0', padding: '18px 27px 0' }}>
               <span></span>

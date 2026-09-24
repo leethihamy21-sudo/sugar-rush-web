@@ -13,7 +13,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY --from=frontend /app/dist ./dist
 COPY scene_1.py ./
-COPY *.xlsx ./
+COPY Kịch_bản_hc_updated.xlsx ./
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 10000

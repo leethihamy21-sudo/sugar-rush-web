@@ -28,3 +28,24 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; }
+
+.home-page button[aria-label="Search"] { display: none !important; }
+
+@media (max-width: 760px) {
+  .home-page { overflow-x: hidden; }
+  .home-nav { padding: 16px 16px 0 !important; flex-wrap: wrap; gap: 10px; }
+  .home-nav > img { width: 120px !important; }
+  .home-nav > nav { order: 3; width: 100%; justify-content: center; gap: 2px !important; overflow-x: auto; }
+  .home-nav > nav a { flex-shrink: 0; padding: 6px !important; font-size: 10px !important; letter-spacing: .5px !important; }
+  .skin-section { grid-template-columns: 1fr !important; }
+  .skin-section > div:first-child { padding: 48px 20px !important; }
+  .skin-section > div:last-child { min-height: 280px !important; }
+  .skin-section > div:last-child img { min-height: 280px !important; }
+  .best-sellers { padding: 40px 20px !important; }
+  .best-sellers > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 18px; }
+  .best-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 20px 14px !important; }
+  .why-section { padding: 48px 20px !important; overflow: hidden; }
+  .why-section > div:first-child { display: block !important; }
+  .why-section > div:first-child > div:first-child { width: 100%; }
+  .comparison-wrap { width: 100%; min-width: 0; overflow-x: auto; }
+}
