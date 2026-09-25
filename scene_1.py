@@ -3,13 +3,13 @@ import re
 import unicodedata
 from difflib import SequenceMatcher
 import pandas as pd
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 
-# Khởi tạo Flask
-app = Flask(__name__)
+# Khởi tạo Flask, trỏ thư mục giao diện về 'dist' (nơi Vite build ra)
+app = Flask(__name__, static_folder="dist", static_url_path="", template_folder="dist")
 
 # ============================================================
-# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU TỪ FILE EXCEL (Chỉ đọc 1 lần khi khởi động)
+# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU TỪ FILE EXCEL
 # ============================================================
 file_name = "final_scene.xlsx"
 
@@ -25,7 +25,7 @@ df = df[required_columns].dropna(subset=["Intents"]).reset_index(drop=True)
 
 
 # ============================================================
-# 2. CÁC HÀM XỬ LÝ TIẾNG VIỆT VÀ KHỚP CÂU HỎI
+# 2. CÁC HÀM XỬ LÝ TIẾNG VIỆT & LỌC CÂU TRẢ LỜI
 # ============================================================
 def normalize(text):
   if pd.isna(text):
@@ -68,7 +68,6 @@ def split_lines(value):
   return [line.strip() for line in cell_to_text(value).split("\n") if line.strip()]
 
 
-# Lưu trữ dữ liệu ánh xạ Intent
 intent_data = {}
 for _, row in df.iterrows():
   intent = str(row["Intents"]).strip()
@@ -79,12 +78,8 @@ for _, row in df.iterrows():
   }
 
 
-# ============================================================
-# 3. NHẬN DIỆN Ý ĐỊNH VÀ LỌC CÂU TRẢ LỜI CỤ THỂ
-# ============================================================
 def detect_intent(user_text):
   text = normalize(user_text)
-
   service_keywords = {
       "iShip": ["ship", "phi ship", "gia ship", "giao hang", "van chuyen"],
       "iThanhtoan": [
@@ -114,7 +109,6 @@ def detect_intent(user_text):
 
   best_intent = None
   best_score = 0
-
   for intent, data in intent_data.items():
     score = 0
     for tr in data["training"]:
@@ -122,29 +116,24 @@ def detect_intent(user_text):
         score += 15
       elif SequenceMatcher(None, text, tr).ratio() >= 0.65:
         score += 8
-
     for kw in data["keywords"]:
       if kw and kw in text:
         score += 6
-
     if score > best_score:
       best_score = score
       best_intent = intent
 
   if best_score >= 6:
     return best_intent
-
   return None
 
 
 def filter_specific_response(user_text, full_response):
   text = normalize(user_text)
-
   if "." not in full_response and len(full_response) < 80:
     return full_response
 
   sentences = [s.strip() for s in full_response.split(".") if s.strip()]
-
   is_asking_price = any(
       w in text for w in ["gia", "bao nhieu tien", "tien", "chi phí", "vnd", "đ"]
   )
@@ -185,12 +174,11 @@ def filter_specific_response(user_text, full_response):
 
   if matched_sentences:
     return ". ".join(matched_sentences) + "."
-
   return full_response
 
 
 # ============================================================
-# 4. ROUTE FLASK
+# 3. ROUTES FLASK
 # ============================================================
 @app.route("/")
 def home():
