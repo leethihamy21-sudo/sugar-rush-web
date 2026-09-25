@@ -1,16 +1,15 @@
 import os
-import random
 import re
 import unicodedata
 from difflib import SequenceMatcher
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
 
-# Khởi tạo Flask, tìm file index.html ngay tại thư mục hiện tại
-app = Flask(__name__, template_folder=".")
+# Khởi tạo Flask
+app = Flask(__name__)
 
 # ============================================================
-# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU TỪ FILE EXCEL (final_scene.xlsx)
+# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU TỪ FILE EXCEL (Chỉ đọc 1 lần khi khởi động)
 # ============================================================
 file_name = "final_scene.xlsx"
 
@@ -19,11 +18,7 @@ if not os.path.exists(file_name):
       f"Không tìm thấy file '{file_name}' trong thư mục hiện tại."
   )
 
-excel_file = pd.ExcelFile(file_name)
-sheet_name = "Chatbot Sugar Rush"
-df = pd.read_excel(file_name, sheet_name=sheet_name)
-
-# Chuẩn hóa tên cột
+df = pd.read_excel(file_name, sheet_name="Chatbot Sugar Rush")
 df.columns = [str(col).strip() for col in df.columns]
 required_columns = ["Entities", "Intents", "Training", "Responses"]
 df = df[required_columns].dropna(subset=["Intents"]).reset_index(drop=True)
@@ -73,7 +68,7 @@ def split_lines(value):
   return [line.strip() for line in cell_to_text(value).split("\n") if line.strip()]
 
 
-# Lưu trữ dữ liệu ánh xạ Intent từ file Excel
+# Lưu trữ dữ liệu ánh xạ Intent
 intent_data = {}
 for _, row in df.iterrows():
   intent = str(row["Intents"]).strip()
@@ -85,12 +80,11 @@ for _, row in df.iterrows():
 
 
 # ============================================================
-# 3. HỆ THỐNG NHẬN DIỆN Ý ĐỊNH VÀ LỌC CÂU TRẢ LỜI CỤ THỂ
+# 3. NHẬN DIỆN Ý ĐỊNH VÀ LỌC CÂU TRẢ LỜI CỤ THỂ
 # ============================================================
 def detect_intent(user_text):
   text = normalize(user_text)
 
-  # Ưu tiên quét các từ khóa dịch vụ / hệ thống đặc biệt
   service_keywords = {
       "iShip": ["ship", "phi ship", "gia ship", "giao hang", "van chuyen"],
       "iThanhtoan": [
@@ -118,7 +112,6 @@ def detect_intent(user_text):
         if intent_name in intent_data:
           return intent_name
 
-  # Quét dựa trên training data và entities trong file Excel
   best_intent = None
   best_score = 0
 
@@ -145,20 +138,13 @@ def detect_intent(user_text):
 
 
 def filter_specific_response(user_text, full_response):
-  """Hàm lọc thông minh: tách đoạn gộp trong excel thành các câu nhỏ
-
-  và chọn câu phù hợp nhất với ý hỏi của khách hàng.
-  """
   text = normalize(user_text)
 
-  # Nếu response không chứa dấu chấm hoặc quá ngắn, trả về nguyên bản
   if "." not in full_response and len(full_response) < 80:
     return full_response
 
-  # Tách đoạn response thành các câu riêng biệt dựa vào dấu chấm '.'
   sentences = [s.strip() for s in full_response.split(".") if s.strip()]
 
-  # Phân loại ý định chi tiết từ câu hỏi của khách hàng
   is_asking_price = any(
       w in text for w in ["gia", "bao nhieu tien", "tien", "chi phí", "vnd", "đ"]
   )
@@ -174,12 +160,9 @@ def filter_specific_response(user_text, full_response):
       w in text for w in ["cong dung", "tac dung", "giup gi", "lam gi"]
   )
 
-  # Duyệt qua các câu trong đoạn văn gộp để tìm câu khớp nhất
   matched_sentences = []
   for s in sentences:
     s_lower = s.lower()
-    norm_s = normalize(s)
-
     if is_asking_price and (
         "gia" in s_lower or "đ" in s_lower or "vnd" in s_lower or "tiền" in s_lower
     ):
@@ -200,16 +183,14 @@ def filter_specific_response(user_text, full_response):
     ):
       matched_sentences.append(s)
 
-  # Nếu tìm thấy câu lọc phù hợp, trả về câu đó
   if matched_sentences:
     return ". ".join(matched_sentences) + "."
 
-  # Nếu khách hỏi chung chung hoặc không khớp tiêu chí cụ thể nào, trả về toàn bộ
   return full_response
 
 
 # ============================================================
-# 4. ROUTE FLASK TRÊN WEB
+# 4. ROUTE FLASK
 # ============================================================
 @app.route("/")
 def home():
@@ -223,7 +204,6 @@ def chat():
 
   if intent and intent in intent_data:
     raw_response = intent_data[intent]["responses"]
-    # Lọc câu trả lời cụ thể dựa theo ý hỏi của khách
     filtered_response = filter_specific_response(user_text, raw_response)
     reply = filtered_response.replace("\n", "<br>")
   else:
