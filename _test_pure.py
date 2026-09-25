@@ -1,73 +1,6 @@
-import json
-import os
-import re
-import unicodedata
+import re, unicodedata
 from difflib import SequenceMatcher
 from functools import lru_cache
-
-from flask import Flask, jsonify, request, send_from_directory
-
-# Flask phục vụ luôn frontend đã build (Vite -> dist/): 1 service duy nhất trên Render.
-# static_folder=None để route /<path:path> bên dưới tự xử lý file + SPA fallback
-# (tránh xung đột với static route mặc định của Flask).
-app = Flask(__name__, static_folder=None)
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DIST_DIR = os.path.join(BASE_DIR, "dist")
-XLSX_PATH = os.path.join(BASE_DIR, "final_scene.xlsx")
-JSON_PATH = os.path.join(BASE_DIR, "final_scene.json")  # cache build-time
-SHEET_NAME = "Chatbot Sugar Rush"
-
-
-# ============================================================
-# 1. NẠP DỮ LIỆU (JSON build-time -> XLSX openpyxl local). Không crash worker.
-# ============================================================
-def _rows_from_json():
-  with open(JSON_PATH, encoding="utf-8") as f:
-    data = json.load(f)
-  rows = []
-  for item in data if isinstance(data, list) else data.get("intents", []):
-    if item.get("Intents"):
-      rows.append(item)
-  return rows
-
-
-def _rows_from_xlsx():
-  # openpyxl read-only: nhẹ hơn pandas+numpy rất nhiều (~5MB vs ~80MB).
-  from openpyxl import load_workbook
-
-  wb = load_workbook(XLSX_PATH, read_only=True, data_only=True)
-  ws = wb[SHEET_NAME] if SHEET_NAME in wb.sheetnames else wb.active
-  header = [str(c.value).strip() if c.value is not None else "" for c in next(ws.iter_rows(min_row=1, max_row=1))]
-  idx = {name: i for i, name in enumerate(header)}
-  rows = []
-  for r in ws.iter_rows(min_row=2, values_only=True):
-    r = list(r) + [""] * (len(header) - len(r))
-    try:
-      intent = str(r[idx["Intents"]]).strip() if r[idx["Intents"]] is not None else ""
-    except (KeyError, IndexError, TypeError):
-      continue
-    if not intent or intent.lower() == "nan":
-      continue
-
-    def _cell(name):
-      try:
-        return r[idx[name]]
-      except (KeyError, IndexError, TypeError):
-        return ""
-    rows.append({
-        "Entities": _cell("Entities"),
-        "Intents": intent,
-        "Training": _cell("Training"),
-        "Responses": _cell("Responses"),
-    })
-  wb.close()
-  return rows
-
-
-# ============================================================
-# 2. CHUẨN HÓA TIẾNG VIỆT + TIỆN ÍCH
-# ============================================================
 @lru_cache(maxsize=4096)
 def normalize(text):
   if text is None:
@@ -136,7 +69,7 @@ def _build_intent_data():
   return data
 
 
-intent_data = _build_intent_data()
+intent_data = {}
 
 
 # ============================================================
@@ -556,11 +489,6 @@ _LABEL_QTYPE = [
 ]
 
 
-def _is_label_text(line):
-  ns = normalize(line)
-  return len(line) < 30 and not (RE_PRICE.search(ns) or RE_DOSAGE.search(ns) or RE_CAPACITY.search(ns))
-
-
 def _clashes_with_label(label, line):
   label_ns, line_ns = normalize(label), normalize(line)
   label_q = next((q for kw, q in _LABEL_QTYPE if kw in label_ns), None)
@@ -579,14 +507,17 @@ def _split_units(full_response):
   text = cell_to_text(full_response)
   # B1: che dấu chấm trong số (150.000đ, 2.5ml) để không bị chẻ đôi.
   text = re.sub(r"(?<=\d)[.](?=\d)", _NUM_DOT, text)
-  # B2: tách theo xuống dòng / dấu ; / dấu chấm câu.
-  #  - ". " (chấm + cách)  -> ranh giới 2 ý (tách).
-  #  - ":" (hai chấm)      -> nhãn: nội dung (KHÔNG tách, giữ nguyên để
-  #    chấm điểm; nhãn đứng riêng sẽ được gộp ở B3 theo logic cùng ý).
-  # KHÔNG tách tại ':' đứng 1 mình: Responses Excel dùng 1 dấu ':' nối 2 ý
-  # ("Dùng 2 lần/ngày. Thành phần: Các..."), tách tại đó tạo nhãn treo
-  # ("Dùng 2 lần/ngày: Thành phần") rồi gộp nhầm 2 ý vào 1 unit.
-  raw = re.split(r"[\n;]+|(?<=[.!?])[ \t\r\f\v]+", text)
+  # B2: tách theo xuống dòng / dấu ; / dấu chấm câu / dấu hai chấm SAU NHÃN.
+  # Chỉ tách tại ':' khi sau nó là chữ HOA (nhãn thật: "Thành phần: Các...").
+  # Dấu ':' đứng TRƯỚC nhãn ("...ngày: Thành phần") hoặc sau chữ thường
+  # ("Dùng 2 lần/ngày: ...") KHÔNG tách — đó là nội dung liền mạch của cùng
+  # 1 ý, tách ra sẽ tạo nhãn treo rồi gộp nhầm sang ý khác.
+  # -> Biến "...ngày: Thành phần: Các..." thành "...ngày. Thành phần: Các..."
+  # (chấm câu tách 2 ý, hai chấm giữ nhãn với nội dung). Khớp trên text GỐC
+  # (còn dấu) nên pattern phải gồm cả dạng có dấu.
+  text = re.sub(r":\s*(?=(?:thành phần|công dụng|tác dụng|giá|dung tích|cách dùng))",
+                ". ", text, flags=re.IGNORECASE)
+  raw = re.split(r"[\n;]+|(?<=[.!?])\s+|(?<=\D):\s*(?=[A-Z\u00C0-\u1EF9])", text)
   # B3: gộp nhãn ngắn ("Thành phần", "Công dụng của Serum là") vào nội dung sau nó.
   parts = []
   for line in raw:
@@ -596,35 +527,18 @@ def _split_units(full_response):
       parts.append(line)
   units = []
   for idx, line in enumerate(parts):
-    if line == "\u0000CONSUMED\u0000":
-      continue  # đã gộp vào unit nhãn phía trước
     ns = normalize(line)
-    has_fact = bool(RE_PRICE.search(ns) or RE_DOSAGE.search(ns) or RE_CAPACITY.search(ns))
-    is_label = len(line) < 30 and not has_fact
+    is_label = (len(line) < 30 and not RE_PRICE.search(ns)
+                and not RE_DOSAGE.search(ns) and not RE_CAPACITY.search(ns))
     if is_label and units and len(units[-1]) < 30:
       units[-1] = f"{units[-1]}: {line}"  # 2 nhãn liên tiếp -> gộp
     elif is_label:
-      # Nhãn treo ("Dùng 2 lần/ngày: Thành phần", "Công dụng của Serum là"):
-      # tách phần đuôi sau ':' cuối — đuôi là nhãn thật của ý TIẾP theo.
-      # Chỉ gộp với câu sau nếu cùng ý (không xung đột nhãn); nếu xung đột
-      # thì đẩy đuôi sang câu sau, phần đầu đứng riêng.
-      head, _, tail = line.rpartition(":")
-      head, tail = head.strip(), tail.strip()
+      # Nhãn treo ("Thành phần", "Công dụng của Serum là"): chỉ gộp với câu
+      # SAU nếu câu sau cùng ý (không chứa từ khóa của ý khác). Nếu câu sau
+      # thuộc ý khác (vd nhãn "Thành phần" mà câu sau nói cách dùng) thì
+      # giữ nhãn đứng riêng để khỏi dính 2 ý vào 1 unit.
       nxt = parts[idx + 1] if idx + 1 < len(parts) else ""
-      if head and tail and _is_label_text(tail):
-        if nxt and not _clashes_with_label(tail, nxt):
-          if head:
-            units.append(head)
-          units.append(tail + " <MERGE_NEXT>" + nxt)
-        else:
-          # Xung đột: nhãn thuộc về câu sau -> gộp nhãn vào câu sau luôn.
-          if head:
-            units.append(head)
-          units.append(tail + ": " + nxt if nxt else tail)
-          if nxt:
-            parts[idx + 1] = "\u0000CONSUMED\u0000"  # đánh dấu đã gộp
-      else:
-        units.append(line + " <MERGE_NEXT>" + nxt)
+      units.append(line + " <MERGE_NEXT>" + nxt)
     elif units and "<MERGE_NEXT>" in units[-1]:
       label, _, expected_next = units[-1].partition("<MERGE_NEXT>")
       if line == expected_next and not _clashes_with_label(label, line):
@@ -693,123 +607,3 @@ def filter_specific_response_v2(user_text, full_response, intent=None):
   return choose_response(detect_question_type(normalize(user_text)), full_response, intent)
 
 
-# ============================================================
-# 6. ROUTES FLASK (+ CONTEXT MEMORY Bước 3)
-# ============================================================
-@app.get("/api/health")
-def api_health():
-  return jsonify({"ok": True, "intents": len(intent_data)})
-
-
-EMPTY_PROMPT = "Dạ bạn hãy nhập câu hỏi để mình hỗ trợ nhé!"
-FALLBACK_REPLY = ("Dạ em chưa hiểu rõ ý của anh/chị lắm. Anh/chị có thể hỏi cụ thể hơn về"
-                  " sản phẩm, giá bán, cách dùng, phí ship hoặc đặt hàng nhé ạ!")
-
-# Context memory theo session (RAM, đủ cho free tier; reset khi restart).
-# {session_id: {"product": intent|None, "skin": True|False, "qtype": str|None}}
-# Giới hạn 500 session, session nào quá 30 phút không dùng sẽ bị dọn khi có session mới.
-_sessions = {}
-_SESSION_TTL = 1800
-_MAX_SESSIONS = 500
-
-
-def _get_ctx(session_id):
-  import time
-  now = time.time()
-  if len(_sessions) >= _MAX_SESSIONS:
-    stale = [k for k, v in _sessions.items() if now - v.get("_ts", 0) > _SESSION_TTL]
-    for k in stale or list(_sessions)[: len(_sessions) - _MAX_SESSIONS + 1]:
-      _sessions.pop(k, None)
-  ctx = _sessions.get(session_id)
-  if ctx is None or now - ctx.get("_ts", 0) > _SESSION_TTL:
-    ctx = {"product": None, "skin": False, "qtype": None, "_ts": now}
-    _sessions[session_id] = ctx
-  else:
-    ctx["_ts"] = now
-  return ctx
-
-
-def handle_message(user_text, session_id="default"):
-  """Pipeline 5 bước: validation -> detect 3 nhóm -> context -> intent -> lọc."""
-  # Bước 1: validation.
-  if not user_text or not str(user_text).strip():
-    return {"reply": EMPTY_PROMPT, "response": EMPTY_PROMPT, "intent": None, "qtype": None}
-  user_text = str(user_text)[:500]
-  text = normalize(user_text)
-
-  # Bước 2: bóc tách 3 nhóm.
-  qtype = detect_question_type(text)
-  product = detect_product(text)
-  has_skin = detect_skin_type(text)
-
-  # Bước 3: context memory - câu mới không nhắc sp mới thì kế thừa câu trước.
-  ctx = _get_ctx(session_id or "default")
-  if product:
-    ctx["product"] = product
-  elif qtype in ("gia", "dungtich", "cachdung", "thanhphan", "congdung",
-                 "conhang", "hansudung", "hieuqua") and ctx["product"]:
-    product = ctx["product"]  # vd "Serum giá bao nhiêu?" -> "Cách dùng thế nào?"
-  if has_skin:
-    ctx["skin"] = True
-  if qtype:
-    ctx["qtype"] = qtype
-
-  # Bước 4: khớp intent theo thứ tự ưu tiên.
-  intent = None
-  if qtype in QUESTION_TO_SERVICE_INTENT:
-    svc = QUESTION_TO_SERVICE_INTENT[qtype]
-    if svc in intent_data:
-      intent = svc
-  if intent is None and (qtype == "loaida" or (has_skin and qtype in (None, "tuvan")) or
-                          (ctx["skin"] and qtype is None and product is None)):
-    if "iLoaida" in intent_data:
-      intent = "iLoaida"
-  if intent is None and product:
-    intent = product
-  if intent is None:
-    intent = detect_intent(user_text)  # fallback chấm điểm Entities/Training
-
-  # Bước 5: lọc và trả lời.
-  if intent is None or intent not in intent_data:
-    return {"reply": FALLBACK_REPLY, "response": FALLBACK_REPLY, "intent": None, "qtype": qtype}
-  full = intent_data[intent]["responses"]
-  # Intent sản phẩm + hỏi ý cụ thể (giá/dung tích/cách dùng/...) -> lọc đúng
-  # đơn vị thông tin. Mọi trường hợp còn lại (dịch vụ, loại da, combo,
-  # còn hàng, hỏi chung) -> trả nguyên kịch bản Excel.
-  if qtype in QTYPE_KEYWORDS:
-    reply = choose_response(qtype, full, intent)
-  else:
-    reply = full.strip()
-  # Trả TEXT THUẦN giữ nguyên \n — frontend render bằng textContent/{text}
-  # kèm CSS white-space: pre-wrap nên tự xuống dòng. KHÔNG chèn <br>.
-  return {"reply": reply, "response": reply, "intent": intent, "qtype": qtype}
-
-
-@app.post("/api/chat")
-@app.post("/chat")  # giữ tương thích bản cũ / proxy cũ
-def chat():
-  data = request.get_json(silent=True) or {}
-  result = handle_message(data.get("message", ""), data.get("session_id", "default"))
-  return jsonify(result)
-
-
-@app.get("/")
-def home():
-  return send_from_directory(DIST_DIR, "index.html")
-
-
-@app.get("/<path:path>")
-def serve_dist(path):
-  # /api đã khai báo ở trên nên không lọt xuống đây.
-  full = os.path.join(DIST_DIR, path)
-  if os.path.isfile(full):
-    return send_from_directory(DIST_DIR, path)
-  index = os.path.join(DIST_DIR, "index.html")
-  if os.path.exists(index):
-    return send_from_directory(DIST_DIR, "index.html")
-  return jsonify({"ok": True, "intents": len(intent_data)})
-
-
-if __name__ == "__main__":
-  port = int(os.environ.get("PORT", "5000"))
-  app.run(host="0.0.0.0", port=port)

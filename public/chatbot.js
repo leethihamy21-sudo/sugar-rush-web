@@ -124,10 +124,19 @@
     input.value = '';
     addMessage('user', text, now());
 
+    var sessionId = null;
+    try {
+      sessionId = window.localStorage.getItem('sugar-rush-chat-session');
+      if (!sessionId) {
+        sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem('sugar-rush-chat-session', sessionId);
+      }
+    } catch (e) { sessionId = 'default'; }
+
     fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
+      body: JSON.stringify({ message: text, session_id: sessionId || 'default' })
     })
       .then(function (res) {
         if (!res.ok) throw new Error('Chat request failed: ' + res.status);

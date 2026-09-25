@@ -59,6 +59,16 @@ const imgStar = "/star.svg";
 const imgTick = "/tick.svg";
 const imgX = "/x.svg";
 const cartStorageKey = 'sugar-rush-cart';
+const chatSessionKey = 'sugar-rush-chat-session';
+
+function getChatSessionId() {
+  let id = window.localStorage.getItem(chatSessionKey);
+  if (!id) {
+    id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    window.localStorage.setItem(chatSessionKey, id);
+  }
+  return id;
+}
 
 type CartProduct = {
   id: string;
@@ -183,6 +193,7 @@ export default function App() {
   async function sendChatMessage(suggestedMessage?: string) {
     const message = (suggestedMessage ?? chatInput).trim();
     if (!message) return;
+    const sessionId = getChatSessionId();
 
     setChatInput('');
     setChatMessages((current) => [...current, { role: 'user', text: message, time: getCurrentTime() }]);
@@ -191,7 +202,7 @@ export default function App() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, session_id: sessionId }),
       });
       if (!response.ok) throw new Error(`Chat request failed: ${response.status}`);
       const data = await response.json();
