@@ -1,89 +1,239 @@
 import os
+import random
+import re
+import unicodedata
+from difflib import SequenceMatcher
 import pandas as pd
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from flask import Flask, jsonify, render_template, request
 
-# Cấu hình đường dẫn thư mục chứa giao diện web đã build (thư mục dist)
-app = Flask(__name__, static_folder='dist', static_url_path='')
-CORS(app)
+# Khởi tạo Flask, tìm file index.html ngay tại thư mục hiện tại
+app = Flask(__name__, template_folder=".")
 
-# ==========================================
-# 1. ĐỌC DỮ LIỆU TỪ FILE EXCEL
-# ==========================================
+# ============================================================
+# 1. ĐỌC VÀ XỬ LÝ DỮ LIỆU TỪ FILE EXCEL (final_scene.xlsx)
+# ============================================================
 file_name = "final_scene.xlsx"
 
-if os.path.exists(file_name):
-    file_path = file_name
-else:
-    file_path = file_name
+if not os.path.exists(file_name):
+  raise FileNotFoundError(
+      f"Không tìm thấy file '{file_name}' trong thư mục hiện tại."
+  )
 
-print(f"Đang cố gắng đọc file từ: {file_path}")
+excel_file = pd.ExcelFile(file_name)
+sheet_name = "Chatbot Sugar Rush"
+df = pd.read_excel(file_name, sheet_name=sheet_name)
 
-try:
-    xls = pd.ExcelFile(file_path)
-    sheet_name = xls.sheet_names[0]
-    df = pd.read_excel(file_path, sheet_name=sheet_name)
-    print(f"✅ Đọc thành công sheet: '{sheet_name}' với {len(df)} dòng dữ liệu từ file Excel!")
-except Exception as e:
-    print(f"❌ Không tìm thấy file hoặc lỗi đọc file: {e}")
-    df = pd.DataFrame()
+# Chuẩn hóa tên cột
+df.columns = [str(col).strip() for col in df.columns]
+required_columns = ["Entities", "Intents", "Training", "Responses"]
+df = df[required_columns].dropna(subset=["Intents"]).reset_index(drop=True)
 
-# ==========================================
-# 2. HÀM TÌM KIẾM CÂU TRẢ LỜI
-# ==========================================
-def find_response(user_text):
-    if df.empty:
-        return "Dạ hiện tại file Excel chưa được tải lên đúng cách."
-    
-    user_text = user_text.lower()
-    best_match_idx = -1
-    max_score = 0
-    
-    for idx, row in df.iterrows():
-        training_data = str(row.get('Training', ''))
-        entities_data = str(row.get('Entities', ''))
-        
-        keywords = (training_data + "\n" + entities_data).lower().split()
-        score = sum(1 for word in keywords if word in user_text and len(word) > 2)
-        
-        if score > max_score:
-            max_score = score
-            best_match_idx = idx
-            
-    if best_match_idx != -1 and max_score > 0:
-        return str(df.iloc[best_match_idx]['Responses'])
+
+# ============================================================
+# 2. CÁC HÀM XỬ LÝ TIẾNG VIỆT VÀ KHỚP CÂU HỎI
+# ============================================================
+def normalize(text):
+  if pd.isna(text):
+    return ""
+  text = str(text).lower().strip()
+  text = text.replace("đ", "d")
+  text = unicodedata.normalize("NFD", text)
+  text = "".join(char for char in text if unicodedata.category(char) != "Mn")
+  text = re.sub(r"[^a-z0-9\s]", " ", text)
+  text = re.sub(r"\s+", " ", text).strip()
+  return text
+
+
+def cell_to_text(value):
+  if pd.isna(value):
+    return ""
+  text = str(value)
+  text = text.replace("\\n", "\n").replace("\r\n", "\n")
+  return text.strip()
+
+
+def extract_entity_keywords(entity_text):
+  entity_text = cell_to_text(entity_text)
+  lines = [line.strip() for line in entity_text.split("\n") if line.strip()]
+  keywords = []
+  for line in lines:
+    if ":" in line:
+      _, keyword_part = line.split(":", 1)
+      for item in keyword_part.replace(";", ",").split(","):
+        if normalize(item):
+          keywords.append(normalize(item))
     else:
-        return "Dạ hiện tại em chưa hiểu rõ ý bạn lắm. Bạn có thể hỏi cụ thể hơn về: giá, thành phần, công dụng, loại da, cách dùng hoặc đơn hàng nhé ạ!"
+      for item in line.replace(";", ",").split(","):
+        if normalize(item):
+          keywords.append(normalize(item))
+  return list(dict.fromkeys([k for k in keywords if k]))
 
-# ==========================================
-# 3. API NHẬN TIN NHẮN CHATBOT
-# ==========================================
-@app.route('/chat', methods=['POST'])
-@app.route('/api/chat', methods=['POST'])
+
+def split_lines(value):
+  return [line.strip() for line in cell_to_text(value).split("\n") if line.strip()]
+
+
+# Lưu trữ dữ liệu ánh xạ Intent từ file Excel
+intent_data = {}
+for _, row in df.iterrows():
+  intent = str(row["Intents"]).strip()
+  intent_data[intent] = {
+      "keywords": extract_entity_keywords(row["Entities"]),
+      "training": [normalize(line) for line in split_lines(row["Training"])],
+      "responses": cell_to_text(row["Responses"]),
+  }
+
+
+# ============================================================
+# 3. HỆ THỐNG NHẬN DIỆN Ý ĐỊNH VÀ LỌC CÂU TRẢ LỜI CỤ THỂ
+# ============================================================
+def detect_intent(user_text):
+  text = normalize(user_text)
+
+  # Ưu tiên quét các từ khóa dịch vụ / hệ thống đặc biệt
+  service_keywords = {
+      "iShip": ["ship", "phi ship", "gia ship", "giao hang", "van chuyen"],
+      "iThanhtoan": [
+          "thanh toan",
+          "chuyen khoan",
+          "tien mat",
+          "cod",
+          "qr",
+      ],
+      "iHoantrahang": ["doi tra", "tra hang", "hoan tien", "hoan tra"],
+      "iHuydon": ["huy don", "doi y khong mua"],
+      "iDathang": ["dat hang", "chot don", "len don"],
+      "iGiamgia": ["giam gia", "uu dai", "khuyen mai"],
+      "iHansudung": ["han su dung", "pao", "mo nap"],
+      "iBaoquan": ["bao quan", "tu lanh", "nang"],
+      "iKhieunai": ["khieu nai", "thai do", "nhan vien"],
+      "iHieuqua": ["hieu qua", "bao lau", "tac dung"],
+      "iChaohoi": ["chao", "hi", "hello", "shop oi", "ban oi", "alo"],
+      "iLoichaotambiet": ["cam on", "thanks", "tam biet"],
+  }
+
+  for intent_name, kws in service_keywords.items():
+    for kw in kws:
+      if kw in text:
+        if intent_name in intent_data:
+          return intent_name
+
+  # Quét dựa trên training data và entities trong file Excel
+  best_intent = None
+  best_score = 0
+
+  for intent, data in intent_data.items():
+    score = 0
+    for tr in data["training"]:
+      if tr and (tr in text or text in tr):
+        score += 15
+      elif SequenceMatcher(None, text, tr).ratio() >= 0.65:
+        score += 8
+
+    for kw in data["keywords"]:
+      if kw and kw in text:
+        score += 6
+
+    if score > best_score:
+      best_score = score
+      best_intent = intent
+
+  if best_score >= 6:
+    return best_intent
+
+  return None
+
+
+def filter_specific_response(user_text, full_response):
+  """Hàm lọc thông minh: tách đoạn gộp trong excel thành các câu nhỏ
+
+  và chọn câu phù hợp nhất với ý hỏi của khách hàng.
+  """
+  text = normalize(user_text)
+
+  # Nếu response không chứa dấu chấm hoặc quá ngắn, trả về nguyên bản
+  if "." not in full_response and len(full_response) < 80:
+    return full_response
+
+  # Tách đoạn response thành các câu riêng biệt dựa vào dấu chấm '.'
+  sentences = [s.strip() for s in full_response.split(".") if s.strip()]
+
+  # Phân loại ý định chi tiết từ câu hỏi của khách hàng
+  is_asking_price = any(
+      w in text for w in ["gia", "bao nhieu tien", "tien", "chi phí", "vnd", "đ"]
+  )
+  is_asking_capacity = any(
+      w in text for w in ["dung tich", "ml", "gram", "bao nhieu ml", "chai"]
+  )
+  is_asking_usage = any(
+      w in text
+      for w in ["cach dung", "su dung", "dung the nao", "dung luc nao", "dung"]
+  )
+  is_asking_ingredient = any(w in text for w in ["thanh phan", "chiết xuất"])
+  is_asking_benefit = any(
+      w in text for w in ["cong dung", "tac dung", "giup gi", "lam gi"]
+  )
+
+  # Duyệt qua các câu trong đoạn văn gộp để tìm câu khớp nhất
+  matched_sentences = []
+  for s in sentences:
+    s_lower = s.lower()
+    norm_s = normalize(s)
+
+    if is_asking_price and (
+        "gia" in s_lower or "đ" in s_lower or "vnd" in s_lower or "tiền" in s_lower
+    ):
+      matched_sentences.append(s)
+    elif is_asking_capacity and ("ml" in s_lower or "chai" in s_lower):
+      matched_sentences.append(s)
+    elif is_asking_usage and (
+        "dung" in s_lower or "su dung" in s_lower or "routine" in s_lower
+    ):
+      matched_sentences.append(s)
+    elif is_asking_ingredient and ("thành phần" in s_lower or "chiết xuất" in s_lower):
+      matched_sentences.append(s)
+    elif is_asking_benefit and (
+        "công dụng" in s_lower
+        or "làm sạch" in s_lower
+        or "cân bằng" in s_lower
+        or "làm dịu" in s_lower
+    ):
+      matched_sentences.append(s)
+
+  # Nếu tìm thấy câu lọc phù hợp, trả về câu đó
+  if matched_sentences:
+    return ". ".join(matched_sentences) + "."
+
+  # Nếu khách hỏi chung chung hoặc không khớp tiêu chí cụ thể nào, trả về toàn bộ
+  return full_response
+
+
+# ============================================================
+# 4. ROUTE FLASK TRÊN WEB
+# ============================================================
+@app.route("/")
+def home():
+  return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json(silent=True) or {}
-    user_message = data.get('message', '')
-    reply = find_response(user_message)
-    return jsonify({'reply': reply, 'response': reply})
+  user_text = request.json.get("message", "")
+  intent = detect_intent(user_text)
 
-@app.get('/api/health')
-def health():
-    return jsonify({'status': 'ok'})
+  if intent and intent in intent_data:
+    raw_response = intent_data[intent]["responses"]
+    # Lọc câu trả lời cụ thể dựa theo ý hỏi của khách
+    filtered_response = filter_specific_response(user_text, raw_response)
+    reply = filtered_response.replace("\n", "<br>")
+  else:
+    reply = (
+        "Dạ em chưa hiểu rõ ý của anh/chị lắm. Anh/chị có thể hỏi cụ thể hơn về"
+        " sản phẩm, giá bán, cách dùng, phí ship hoặc đặt hàng nhé ạ!"
+    )
 
-# ==========================================
-# 4. PHỤC VỤ GIAO DIỆN WEB (TRÁNH LỖI 404)
-# ==========================================
-@app.route('/')
-def serve_index():
-    return send_from_directory(app.static_folder, 'index.html')
+  return jsonify({"reply": reply})
 
-@app.route('/<path:path>')
-def serve_static(path):
-    if os.path.exists(os.path.join(app.static_folder, path)):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+if __name__ == "__main__":
+  app.run(debug=True, port=5000)
