@@ -59,11 +59,16 @@ def find_response(user_text):
 # 3. API NHẬN TIN NHẮN CHATBOT
 # ==========================================
 @app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def chat():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     user_message = data.get('message', '')
     reply = find_response(user_message)
-    return jsonify({'reply': reply})
+    return jsonify({'reply': reply, 'response': reply})
+
+@app.get('/api/health')
+def health():
+    return jsonify({'status': 'ok'})
 
 # ==========================================
 # 4. PHỤC VỤ GIAO DIỆN WEB (TRÁNH LỖI 404)

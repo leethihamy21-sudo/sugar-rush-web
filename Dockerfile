@@ -18,7 +18,3 @@ COPY final_scene.xlsx ./
 ENV PYTHONUNBUFFERED=1
 EXPOSE 10000
 CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} --workers 1 scene_1:app"]
-# (Phần trên giữ nguyên các lệnh build frontend và python của bạn)
-
-# Lệnh khởi động cuối cùng để Render không bị Timeout
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "scene_1:app"]
