@@ -207,7 +207,7 @@ export default function App() {
       {/* Promo Bar */}
       <div style={{ background: '#f3f1eb', height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ fontFamily: 'Arial, sans-serif', fontSize: 11, color: '#000', letterSpacing: '0.88px', textTransform: 'uppercase', margin: 0, textAlign: 'center' }}>
-          Miễn phí vận chuyển cho đơn từ 1.750.000₫ &nbsp;|&nbsp; Ưu đãi mở màn: Giảm 10% cho lần mua đầu tiên
+          Miễn phí vận chuyển cho đơn từ 500.000₫ &nbsp;|&nbsp; Ưu đãi mở màn: Giảm 10% cho lần mua đầu tiên
         </p>
       </div>
 
