@@ -259,7 +259,13 @@ export default function App() {
       <div className="best-sellers" style={{ padding: '60px 120px', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 35 }}>
           <h2 style={{ fontFamily: '"Domine:Regular", Domine, serif', fontWeight: 400, fontSize: 36, color: '#333', letterSpacing: '-0.72px', lineHeight: '45px', margin: 0 }}>Bán chạy nhất</h2>
-          <button style={{ border: '1px solid #333', background: 'transparent', padding: '13px 37px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/shop.html';
+            }}
+            style={{ border: '1px solid #333', background: 'transparent', padding: '13px 37px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
+          >
             <span style={{ fontFamily: 'Arial, sans-serif', fontSize: 14, color: '#333', textTransform: 'capitalize', lineHeight: '1.444' }}>Khám phá tất cả</span>
             <img src={imgVector} alt="" style={{ width: 11, height: 9 }} />
           </button>
